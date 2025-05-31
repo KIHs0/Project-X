@@ -88,6 +88,13 @@ app.use(flash());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+//locals middleware
+app.use((req, res, next) => {
+  res.locals.successMsg = req.flash("success");
+  res.locals.errorMsg = req.flash("error");
+  res.locals.currUser = req.user;
+  next();
+});
 // new video Route
 app.get("/newvideo", (req, res) => res.render("add.ejs"));
 app.post("/newvideo", upload.single("video"), async (req, res, next) => {
@@ -242,28 +249,12 @@ app.get("/logout", (req, res) => {
     res.redirect("/");
   });
 });
-// main middleware
 
-app.use((err, req, res, next) => {
-  console.log("middele ware runninx");
-  console.error(err.message);
-  req.flash("error", err.message);
-  // res.status(500).json({ success: false, error: err.message });
-  next();
-});
-//locals middleware
-
-app.use((req, res, next) => {
-  res.locals.successMsg = req.flash("success");
-  res.locals.errorMsg = req.flash("error");
-  res.locals.currUser = req.user;
-  next();
-});
 //index Route and home.ejs
 
 app.get("/", async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 10;
+  const limit = 16;
   const skip = (page - 1) * limit;
   const total = await VideoDatas.countDocuments({});
   const totalPages = Math.ceil(total / limit);
@@ -333,6 +324,16 @@ app.get(
     res.render("categories.ejs", { results, query });
   })
 );
+// main middleware
+app.use((err, req, res, next) => {
+  console.log("middele ware runninx");
+  console.error(err.message);
+  req.flash("error", "server error");
+  // res.status(500).json({ success: false, error: err.message });
+  next();
+});
+//locals middleware
+
 app.use((req, res, next) => {
   console.log("middleware running");
   res.render("err.ejs", { message: "page not found" });

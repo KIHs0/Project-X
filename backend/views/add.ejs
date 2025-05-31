@@ -1,671 +1,667 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Upload Your Video</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .form-control:focus {
-        border: 2px solid cyan;
-        background: transparent;
-        color: wheat;
-      }
-      body {
-        background-color: #000;
-        font-family: sans-serif;
-      }
-      .upload-bar {
-        display: none !important;
-      }
-      .upload-bar.show-upload {
-        display: flex !important; /* this overrides .upload-bar's display:none */
-      }
-      .form-container:hover {
-        box-shadow: 0 6px 40px rgba(0, 0, 0, 0.8),
-          inset 0 0 30px rgba(255, 255, 255, 0.07);
-        transform: scale(1.01);
-      }
-      .form-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 30px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6),
-          inset 0 0 20px rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        color: #f5f5f5;
-        background-image: linear-gradient(
-          to bottom right,
-          rgba(255, 255, 255, 0.05),
-          rgba(255, 255, 255, 0.01)
-        );
-      }
-      video {
-        width: 100%;
-        margin-top: 20px;
-        display: none;
-        border-radius: 12px;
-      }
+<%layout("../layout/plate.ejs")%>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Your Video</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    .form-control:focus {
+      border: 2px solid cyan;
+      background: transparent;
+      color: wheat;
+    }
+    body {
+      background-color: #000;
+      font-family: sans-serif;
+    }
+    .upload-bar {
+      display: none !important;
+    }
+    .upload-bar.show-upload {
+      display: flex !important; /* this overrides .upload-bar's display:none */
+    }
+    .form-container:hover {
+      box-shadow: 0 6px 40px rgba(0, 0, 0, 0.8),
+        inset 0 0 30px rgba(255, 255, 255, 0.07);
+      transform: scale(1.01);
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 4rem auto;
+      padding: 30px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      color: #f5f5f5;
+      background-image: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.01)
+      );
+    }
 
-      /* categoire style */
-      .dropdown-multi-select {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-      }
+    video {
+      width: 100%;
+      margin-top: 20px;
+      display: none;
+      border-radius: 12px;
+    }
 
-      .dropdown-button {
-        width: 100%;
-        padding: 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        text-align: left;
-      }
+    /* categoire style */
+    .dropdown-multi-select {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
 
-      .dropdown-options {
-        display: none;
-        position: absolute;
-        z-index: 1000;
-        background-color: white;
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        margin-top: 5px;
-        padding: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
+    .dropdown-button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+    }
 
-      .dropdown-multi-select.open .dropdown-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
+    .dropdown-options {
+      display: none;
+      position: absolute;
+      z-index: 1000;
+      background-color: white;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 5px;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-      .tag-check {
-        display: none;
-      }
+    .dropdown-multi-select.open .dropdown-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
 
-      .tag-label {
-        padding: 6px 14px;
-        border: 2px solid #6c757d;
-        border-radius: 20px;
-        cursor: pointer;
-        background-color: #f8f9fa;
-        color: #212529;
-        font-size: 0.9rem;
-        transition: background-color 0.3s, border-color 0.3s;
-      }
+    .tag-check {
+      display: none;
+    }
 
-      .tag-check:checked + .tag-label {
-        background-color: #0d6efd;
-        color: white;
-        border-color: #0d6efd;
-      }
+    .tag-label {
+      padding: 6px 14px;
+      border: 2px solid #6c757d;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: #f8f9fa;
+      color: #212529;
+      font-size: 0.9rem;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
 
-      .tag-label:hover {
-        background-color: #e2e6ea;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="form-container">
-      <div class="d-flex align-items-center upload-bar">
-        <strong>Uploading...</strong>
-        <div
-          class="spinner-border ms-auto"
-          role="status"
-          aria-hidden="true"
-        ></div>
+    .tag-check:checked + .tag-label {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+
+    .tag-label:hover {
+      background-color: #e2e6ea;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <div class="d-flex align-items-center upload-bar">
+      <strong>Uploading...</strong>
+      <div
+        class="spinner-border ms-auto"
+        role="status"
+        aria-hidden="true"
+      ></div>
+    </div>
+    <h2 class="text-center" style="font-size: 1rem; margin-bottom: 1rem">
+      👻 Be Anonymous & Upload
+    </h2>
+    <form action="/newvideo" method="POST" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="title" class="form-label">title?</label>
+        <input
+          type="text"
+          class="form-control"
+          id="title"
+          name="video[title]"
+          value="..."
+        />
       </div>
-      <h2 class="text-center" style="font-size: 1rem; margin-bottom: 1rem">
-        👻 Be Anonymous & Upload
-      </h2>
-      <form action="/newvideo" method="POST" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="title" class="form-label">title?</label>
-          <input
-            type="text"
-            class="form-control"
-            id="title"
-            name="video[title]"
-            value="..."
-          />
-        </div>
-        <div class="mb-3">
-          <label for="desc" class="form-label">description?</label>
-          <input
-            type="text"
-            class="form-control"
-            id="desc"
-            name="video[description]"
-            value="..."
-          />
-        </div>
-        <div class="mb-3">
-          <label for="name" class="form-label">Name?</label>
-          <input
-            type="text"
-            class="form-control"
-            id="name"
-            name="video[name]"
-            value="Anonymous"
-          />
-        </div>
-        <!-- categoreis -->
+      <div class="mb-3">
+        <label for="desc" class="form-label">description?</label>
+        <input
+          type="text"
+          class="form-control"
+          id="desc"
+          name="video[description]"
+          value="..."
+        />
+      </div>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name?</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="video[name]"
+          value="Anonymous"
+        />
+      </div>
+      <!-- categoreis -->
+      <div class="mb-3">
+        <label class="form-label">Tags</label>
+        <div class="dropdown-multi-select" id="categoryDropdown">
+          <div class="dropdown-button" onclick="toggleDropdown()">
+            Select categories..+8.
+          </div>
+          <div class="dropdown-options">
+            <!-- Tag Items -->
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-nepali"
+              name="video[categories][]"
+              value="nepali"
+            />
+            <label class="tag-label" for="tag-nepali">nepali</label>
 
-        <div class="mb-3">
-          <label class="form-label">Tags</label>
-          <div class="dropdown-multi-select" id="categoryDropdown">
-            <div class="dropdown-button" onclick="toggleDropdown()">
-              Select categories..+8.
-            </div>
-            <div class="dropdown-options">
-              <!-- Tag Items -->
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-nepali"
-                name="video[categories][]"
-                value="nepali"
-              />
-              <label class="tag-label" for="tag-nepali">nepali</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-indian"
+              name="video[categories][]"
+              value="indian"
+            />
+            <label class="tag-label" for="tag-indian">indian</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-indian"
-                name="video[categories][]"
-                value="indian"
-              />
-              <label class="tag-label" for="tag-indian">indian</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-kanda"
+              name="video[categories][]"
+              value="kanda"
+            />
+            <label class="tag-label" for="tag-kanda">kanda</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-kanda"
-                name="video[categories][]"
-                value="kanda"
-              />
-              <label class="tag-label" for="tag-kanda">kanda</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-milf"
+              name="video[categories][]"
+              value="milf"
+            />
+            <label class="tag-label" for="tag-milf">milf</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-milf"
-                name="video[categories][]"
-                value="milf"
-              />
-              <label class="tag-label" for="tag-milf">milf</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-teen"
+              name="video[categories][]"
+              value="teen"
+            />
+            <label class="tag-label" for="tag-teen">teen</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-teen"
-                name="video[categories][]"
-                value="teen"
-              />
-              <label class="tag-label" for="tag-teen">teen</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-school"
+              name="video[categories][]"
+              value="school"
+            />
+            <label class="tag-label" for="tag-school">school</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-school"
-                name="video[categories][]"
-                value="school"
-              />
-              <label class="tag-label" for="tag-school">school</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-english"
+              name="video[categories][]"
+              value="english"
+            />
+            <label class="tag-label" for="tag-english">english</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-english"
-                name="video[categories][]"
-                value="english"
-              />
-              <label class="tag-label" for="tag-english">english</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-russian"
+              name="video[categories][]"
+              value="russian"
+            />
+            <label class="tag-label" for="tag-russian">russian</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-russian"
-                name="video[categories][]"
-                value="russian"
-              />
-              <label class="tag-label" for="tag-russian">russian</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-pornstar"
+              name="video[categories][]"
+              value="pornstar"
+            />
+            <label class="tag-label" for="tag-pornstar">pornstar</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-pornstar"
-                name="video[categories][]"
-                value="pornstar"
-              />
-              <label class="tag-label" for="tag-pornstar">pornstar</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-celebrity"
+              name="video[categories][]"
+              value="celebrity"
+            />
+            <label class="tag-label" for="tag-celebrity">celebrity</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-celebrity"
-                name="video[categories][]"
-                value="celebrity"
-              />
-              <label class="tag-label" for="tag-celebrity">celebrity</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-asian"
+              name="video[categories][]"
+              value="asian"
+            />
+            <label class="tag-label" for="tag-asian">asian</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-asian"
-                name="video[categories][]"
-                value="asian"
-              />
-              <label class="tag-label" for="tag-asian">asian</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-jav"
+              name="video[categories][]"
+              value="jav"
+            />
+            <label class="tag-label" for="tag-jav">jav</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-jav"
-                name="video[categories][]"
-                value="jav"
-              />
-              <label class="tag-label" for="tag-jav">jav</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-thai"
+              name="video[categories][]"
+              value="thai"
+            />
+            <label class="tag-label" for="tag-thai">thai</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-thai"
-                name="video[categories][]"
-                value="thai"
-              />
-              <label class="tag-label" for="tag-thai">thai</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-latina"
+              name="video[categories][]"
+              value="latina"
+            />
+            <label class="tag-label" for="tag-latina">latina</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-latina"
-                name="video[categories][]"
-                value="latina"
-              />
-              <label class="tag-label" for="tag-latina">latina</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-erotic"
+              name="video[categories][]"
+              value="erotic"
+            />
+            <label class="tag-label" for="tag-erotic">erotic</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-erotic"
-                name="video[categories][]"
-                value="erotic"
-              />
-              <label class="tag-label" for="tag-erotic">erotic</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-rape"
+              name="video[categories][]"
+              value="rape"
+            />
+            <label class="tag-label" for="tag-rape">rape</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-rape"
-                name="video[categories][]"
-                value="rape"
-              />
-              <label class="tag-label" for="tag-rape">rape</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-gangbang"
+              name="video[categories][]"
+              value="gangbang"
+            />
+            <label class="tag-label" for="tag-gangbang">gangbang</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-gangbang"
-                name="video[categories][]"
-                value="gangbang"
-              />
-              <label class="tag-label" for="tag-gangbang">gangbang</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-sex"
+              name="video[categories][]"
+              value="sex"
+            />
+            <label class="tag-label" for="tag-sex">sex</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-sex"
-                name="video[categories][]"
-                value="sex"
-              />
-              <label class="tag-label" for="tag-sex">sex</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-porn"
+              name="video[categories][]"
+              value="porn"
+            />
+            <label class="tag-label" for="tag-porn">porn</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-porn"
-                name="video[categories][]"
-                value="porn"
-              />
-              <label class="tag-label" for="tag-porn">porn</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-brutal"
+              name="video[categories][]"
+              value="brutal"
+            />
+            <label class="tag-label" for="tag-brutal">brutal</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-brutal"
-                name="video[categories][]"
-                value="brutal"
-              />
-              <label class="tag-label" for="tag-brutal">brutal</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-chained"
+              name="video[categories][]"
+              value="chained"
+            />
+            <label class="tag-label" for="tag-chained">chained</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-chained"
-                name="video[categories][]"
-                value="chained"
-              />
-              <label class="tag-label" for="tag-chained">chained</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-kiss"
+              name="video[categories][]"
+              value="kiss"
+            />
+            <label class="tag-label" for="tag-kiss">kiss</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-kiss"
-                name="video[categories][]"
-                value="kiss"
-              />
-              <label class="tag-label" for="tag-kiss">kiss</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-69"
+              name="video[categories][]"
+              value="69"
+            />
+            <label class="tag-label" for="tag-69">69</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-69"
-                name="video[categories][]"
-                value="69"
-              />
-              <label class="tag-label" for="tag-69">69</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-threesome"
+              name="video[categories][]"
+              value="threesome"
+            />
+            <label class="tag-label" for="tag-threesome">threesome</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-threesome"
-                name="video[categories][]"
-                value="threesome"
-              />
-              <label class="tag-label" for="tag-threesome">threesome</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-fap"
+              name="video[categories][]"
+              value="fap"
+            />
+            <label class="tag-label" for="tag-fap">fap</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-fap"
-                name="video[categories][]"
-                value="fap"
-              />
-              <label class="tag-label" for="tag-fap">fap</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-masturbation"
+              name="video[categories][]"
+              value="masturbation"
+            />
+            <label class="tag-label" for="tag-masturbation">masturbation</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-masturbation"
-                name="video[categories][]"
-                value="masturbation"
-              />
-              <label class="tag-label" for="tag-masturbation"
-                >masturbation</label
-              >
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-cams"
+              name="video[categories][]"
+              value="cams"
+            />
+            <label class="tag-label" for="tag-cams">cams</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-cams"
-                name="video[categories][]"
-                value="cams"
-              />
-              <label class="tag-label" for="tag-cams">cams</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-leak"
+              name="video[categories][]"
+              value="leak"
+            />
+            <label class="tag-label" for="tag-leak">leak</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-leak"
-                name="video[categories][]"
-                value="leak"
-              />
-              <label class="tag-label" for="tag-leak">leak</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-mms"
+              name="video[categories][]"
+              value="mms"
+            />
+            <label class="tag-label" for="tag-mms">mms</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-mms"
-                name="video[categories][]"
-                value="mms"
-              />
-              <label class="tag-label" for="tag-mms">mms</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-schoolgirl"
+              name="video[categories][]"
+              value="schoolgirl"
+            />
+            <label class="tag-label" for="tag-schoolgirl">schoolgirl</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-schoolgirl"
-                name="video[categories][]"
-                value="schoolgirl"
-              />
-              <label class="tag-label" for="tag-schoolgirl">schoolgirl</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-college"
+              name="video[categories][]"
+              value="college"
+            />
+            <label class="tag-label" for="tag-college">college</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-college"
-                name="video[categories][]"
-                value="college"
-              />
-              <label class="tag-label" for="tag-college">college</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-female"
+              name="video[categories][]"
+              value="female"
+            />
+            <label class="tag-label" for="tag-female">female</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-female"
-                name="video[categories][]"
-                value="female"
-              />
-              <label class="tag-label" for="tag-female">female</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-male"
+              name="video[categories][]"
+              value="male"
+            />
+            <label class="tag-label" for="tag-male">male</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-male"
-                name="video[categories][]"
-                value="male"
-              />
-              <label class="tag-label" for="tag-male">male</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-gay"
+              name="video[categories][]"
+              value="gay"
+            />
+            <label class="tag-label" for="tag-gay">gay</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-gay"
-                name="video[categories][]"
-                value="gay"
-              />
-              <label class="tag-label" for="tag-gay">gay</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-straight"
+              name="video[categories][]"
+              value="straight"
+            />
+            <label class="tag-label" for="tag-straight">straight</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-straight"
-                name="video[categories][]"
-                value="straight"
-              />
-              <label class="tag-label" for="tag-straight">straight</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-transgender"
+              name="video[categories][]"
+              value="transgender"
+            />
+            <label class="tag-label" for="tag-transgender">transgender</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-transgender"
-                name="video[categories][]"
-                value="transgender"
-              />
-              <label class="tag-label" for="tag-transgender">transgender</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-old"
+              name="video[categories][]"
+              value="old"
+            />
+            <label class="tag-label" for="tag-old">old</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-old"
-                name="video[categories][]"
-                value="old"
-              />
-              <label class="tag-label" for="tag-old">old</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-young"
+              name="video[categories][]"
+              value="young"
+            />
+            <label class="tag-label" for="tag-young">young</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-young"
-                name="video[categories][]"
-                value="young"
-              />
-              <label class="tag-label" for="tag-young">young</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-petite"
+              name="video[categories][]"
+              value="petite"
+            />
+            <label class="tag-label" for="tag-petite">petite</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-petite"
-                name="video[categories][]"
-                value="petite"
-              />
-              <label class="tag-label" for="tag-petite">petite</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-ass"
+              name="video[categories][]"
+              value="ass"
+            />
+            <label class="tag-label" for="tag-ass">ass</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-ass"
-                name="video[categories][]"
-                value="ass"
-              />
-              <label class="tag-label" for="tag-ass">ass</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-anal"
+              name="video[categories][]"
+              value="anal"
+            />
+            <label class="tag-label" for="tag-anal">anal</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-anal"
-                name="video[categories][]"
-                value="anal"
-              />
-              <label class="tag-label" for="tag-anal">anal</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-vagina"
+              name="video[categories][]"
+              value="vagina"
+            />
+            <label class="tag-label" for="tag-vagina">vagina</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-vagina"
-                name="video[categories][]"
-                value="vagina"
-              />
-              <label class="tag-label" for="tag-vagina">vagina</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-leaks"
+              name="video[categories][]"
+              value="leaks"
+            />
+            <label class="tag-label" for="tag-leaks">leaks</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-leaks"
-                name="video[categories][]"
-                value="leaks"
-              />
-              <label class="tag-label" for="tag-leaks">leaks</label>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-cum"
+              name="video[categories][]"
+              value="cum"
+            />
+            <label class="tag-label" for="tag-cum">cum</label>
 
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-cum"
-                name="video[categories][]"
-                value="cum"
-              />
-              <label class="tag-label" for="tag-cum">cum</label>
-
-              <input
-                type="checkbox"
-                class="tag-check"
-                id="tag-facefuck"
-                name="video[categories][]"
-                value="facefuck"
-              />
-              <label class="tag-label" for="tag-facefuck">facefuck</label>
-            </div>
+            <input
+              type="checkbox"
+              class="tag-check"
+              id="tag-facefuck"
+              name="video[categories][]"
+              value="facefuck"
+            />
+            <label class="tag-label" for="tag-facefuck">facefuck</label>
           </div>
         </div>
-        <!-- categoreis -->
-        <div class="mb-3">
-          <label for="email" class="form-label">Email?</label>
-          <input
-            type="email"
-            class="form-control"
-            id="email"
-            name="video[email]"
-            value="Anonymous@hotmail.com"
-          />
-        </div>
+      </div>
+      <!-- categoreis -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email?</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="video[email]"
+          value="Anonymous@hotmail.com"
+        />
+      </div>
 
-        <div class="mb-3">
-          <label for="video" class="form-label">Choose a Video File</label>
-          <input
-            class="form-control"
-            type="file"
-            id="video"
-            name="video"
-            accept="video/*"
-            required
-          />
-        </div>
+      <div class="mb-3">
+        <label for="video" class="form-label">Choose a Video File</label>
+        <input
+          class="form-control"
+          type="file"
+          id="video"
+          name="video"
+          accept="video/*"
+          required
+        />
+      </div>
 
-        <!-- Video Preview -->
-        <video id="videoPreview" controls></video>
+      <!-- Video Preview -->
+      <video id="videoPreview" controls></video>
 
-        <div class="d-grid mt-4">
-          <button type="submit" class="btn btn-primary upload-btn">
-            Upload Video
-          </button>
-        </div>
-      </form>
-    </div>
+      <div class="d-grid mt-4">
+        <button type="submit" class="btn btn-primary upload-btn">
+          Upload Video
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
 
-    <script>
-      const videoInput = document.getElementById("video");
-      const videoPreview = document.getElementById("videoPreview");
-      const button = document.querySelector(".upload-btn");
-      const upload = document.querySelector(".upload-bar");
+<script>
+  const videoInput = document.getElementById("video");
+  const videoPreview = document.getElementById("videoPreview");
+  const button = document.querySelector(".upload-btn");
+  const upload = document.querySelector(".upload-bar");
 
-      videoInput.addEventListener("change", function () {
-        button.addEventListener("click", (e) => {
-          console.log("fired");
-          upload.classList.toggle("show-upload");
-        });
-        const file = this.files[0];
+  videoInput.addEventListener("change", function () {
+    button.addEventListener("click", (e) => {
+      console.log("fired");
+      upload.classList.toggle("show-upload");
+    });
+    const file = this.files[0];
 
-        if (file && file.type.startsWith("video/")) {
-          const videoURL = URL.createObjectURL(file);
-          videoPreview.src = videoURL;
-          videoPreview.style.display = "block";
-        } else {
-          videoPreview.src = "";
-          videoPreview.style.display = "none";
-          alert("Please select a valid video file.");
-        }
-      });
-      function toggleDropdown() {
-        document.getElementById("categoryDropdown").classList.toggle("open");
-      }
+    if (file && file.type.startsWith("video/")) {
+      const videoURL = URL.createObjectURL(file);
+      videoPreview.src = videoURL;
+      videoPreview.style.display = "block";
+    } else {
+      videoPreview.src = "";
+      videoPreview.style.display = "none";
+      alert("Please select a valid video file.");
+    }
+  });
+  function toggleDropdown() {
+    document.getElementById("categoryDropdown").classList.toggle("open");
+  }
 
-      // Optional: Close dropdown on outside click
-      window.addEventListener("click", function (e) {
-        const dropdown = document.getElementById("categoryDropdown");
-        if (!dropdown.contains(e.target)) {
-          dropdown.classList.remove("open");
-        }
-      });
+  // Optional: Close dropdown on outside click
+  window.addEventListener("click", function (e) {
+    const dropdown = document.getElementById("categoryDropdown");
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove("open");
+    }
+  });
 
-      // checkbox limitations
-      const MAX_SELECTION = 7;
-      const checkboxes = document.querySelectorAll(".tag-check");
+  // checkbox limitations
+  const MAX_SELECTION = 7;
+  const checkboxes = document.querySelectorAll(".tag-check");
 
-      function updateCheckboxStates() {
-        const checked = Array.from(checkboxes).filter((cb) => cb.checked);
+  function updateCheckboxStates() {
+    const checked = Array.from(checkboxes).filter((cb) => cb.checked);
 
-        if (checked.length >= MAX_SELECTION) {
-          checkboxes.forEach((cb) => {
-            if (!cb.checked) cb.disabled = true;
-          });
-        } else {
-          checkboxes.forEach((cb) => (cb.disabled = false));
-        }
-      }
-
+    if (checked.length >= MAX_SELECTION) {
       checkboxes.forEach((cb) => {
-        cb.addEventListener("change", updateCheckboxStates);
+        if (!cb.checked) cb.disabled = true;
       });
-    </script>
-  </body>
-</html>
+    } else {
+      checkboxes.forEach((cb) => (cb.disabled = false));
+    }
+  }
+
+  checkboxes.forEach((cb) => {
+    cb.addEventListener("change", updateCheckboxStates);
+  });
+</script>
